@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -6,15 +5,22 @@
     <meta charset="UTF-8">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-      body { text-align: center; margin-top: 100px; font-family: sans-serif; }
-      #status { margin-top: 20px; color: #444; }
+      body {
+        text-align: center;
+        margin-top: 100px;
+        font-family: sans-serif;
+      }
+      #status {
+        margin-top: 20px;
+        color: #444;
+      }
     </style>
   </head>
   <body>
     <h2>Welcome to the Placement Portal</h2>
 
     <div id="g_id_onload"
-         data-client_id="501002468406-23kq7ri1692cisc64trj8gjhamdboe9k.apps.googleusercontent.com"
+         data-client_id="501002468406-23kq7ri1692cisc64trj8gjhamdboe9k.apps.googleusercontent.com.apps.googleusercontent.com"
          data-callback="handleCredentialResponse"
          data-auto_prompt="false">
     </div>
@@ -34,9 +40,9 @@
       function parseJwt(token) {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
         return JSON.parse(jsonPayload);
       }
 
@@ -46,9 +52,8 @@
 
         document.getElementById("status").innerText = `Signed in as ${email}`;
 
-        google.script.run.withSuccessHandler(function(html) {
-          document.open(); document.write(html); document.close();
-        }).handleLogin(email);
+        // Redirect to Apps Script backend with email as parameter
+        window.location.href = "https://script.google.com/macros/s/AKfycbxwDZuDfLk85E4kInkJQ2ZcCpdTvQ-RbAhkC3GpEJTmJPQyfDScCdED2ja2C1ecIEtNTw/exec?email=" + email;
       }
     </script>
   </body>
