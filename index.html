@@ -59,24 +59,21 @@
   </div>
 
   <script>
-    let loginHandled = false;
-    function handleCredentialResponse(response) {
-      if (loginHandled) return;
-      loginHandled = true;
-      const payload = parseJwt(response.credential);
-      const studentEmail = payload.email;
+  function handleCredentialResponse(response) {
+    const payload = parseJwt(response.credential);
+    const studentEmail = payload.email;
 
-      // Redirect to script with email param
-      window.location.href = `https://script.google.com/macros/s/AKfycbz4hgWkWQtQ7ZDF6jxkuYslPOSLq7NWjuyZHWGZ2Fp3BalY3jD5CjXjhDVY7AwgFGgJ-w/exec?email=${encodeURIComponent(studentEmail)}`;
-    }
+    window.location.href = `https://script.google.com/macros/s/AKfycbz4hgWkWQtQ7ZDF6jxkuYslPOSLq7NWjuyZHWGZ2Fp3BalY3jD5CjXjhDVY7AwgFGgJ-w/exec?email=${encodeURIComponent(studentEmail)}`;
+  }
 
-    function parseJwt(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join('')));
-    }
-  </script>
+  function parseJwt(token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join('')));
+  }
+</script>
+
 </body>
 </html>
