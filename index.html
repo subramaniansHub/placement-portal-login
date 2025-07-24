@@ -54,22 +54,13 @@
   </div>
 
   <script>
-  function handleCredentialResponse(response) {
-    const payload = parseJwt(response.credential);
-    const userEmail = payload.email;
+ function handleCredentialResponse(response) {
+  const payload = parseJwt(response.credential);
+  const userEmail = payload.email;
 
-    if (userEmail.endsWith("@sssihl.edu.in")) {
-      // Coordinator login — Workspace method
-      google.script.run.withSuccessHandler(function(html) {
-        document.open();
-        document.write(html);
-        document.close();
-      }).handleWorkspaceLogin(); // This function should exist in Apps Script
-    } else {
-      // Student login — public redirect
-      window.location.href = `https://script.google.com/macros/s/AKfycbz4hgWkWQtQ7ZDF6jxkuYslPOSLq7NWjuyZHWGZ2Fp3BalY3jD5CjXjhDVY7AwgFGgJ-w/exec?email=${encodeURIComponent(userEmail)}`;
-    }
-  }
+  window.location.href = `https://script.google.com/macros/s/AKfycbz4hgWkWQtQ7ZDF6jxkuYslPOSLq7NWjuyZHWGZ2Fp3BalY3jD5CjXjhDVY7AwgFGgJ-w/exec?email=${encodeURIComponent(userEmail)}`;
+}
+
 
 
     function parseJwt(token) {
