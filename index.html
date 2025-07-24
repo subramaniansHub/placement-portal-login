@@ -59,7 +59,10 @@
   </div>
 
   <script>
+    let loginHandled = false;
     function handleCredentialResponse(response) {
+      if (loginHandled) return;
+      loginHandled = true;
       const payload = parseJwt(response.credential);
       const studentEmail = payload.email;
 
