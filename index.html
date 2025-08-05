@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>Placement Tracker System</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f4f6f9; }
+    header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+    main { padding: 20px; }
+    .hidden { display: none; }
+    .card { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h2 { margin-top: 0; }
+    label { display: block; margin: 8px 0 4px; }
+    input, select, textarea, button { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    button { background: #2c3e50; color: white; cursor: pointer; }
+    button:hover { background: #34495e; }
+    nav { background: #ecf0f1; padding: 10px; text-align: center; }
+    nav button { margin: 5px; width: auto; }
+    .dashboard-cards { display: flex; flex-wrap: wrap; gap: 10px; }
+    .dashboard-card { flex: 1; min-width: 200px; padding: 15px; background: #fff; border-left: 4px solid #2980b9; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
+    th { background: #f1f1f1; }
+    .status { font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>College Placement Portal</h1>
+</header>
+
+<main>
+<div id="loginView" class="card">
+  <h2>Login</h2>
+  <p>Login with your Google account to continue.</p>
+
+  <!-- Google Identity Script Setup -->
+  <div id="g_id_onload"
+       data-client_id="501002468406-23kq7ri1692cisc64trj8gjhamdboe9k.apps.googleusercontent.com"
+       data-callback="onLogin"
+       data-auto_prompt="false">
+  </div>
+
+  <div class="g_id_signin"
+       data-type="standard"
+       data-size="large"
+       data-theme="outline"
+       data-text="sign_in_with"
+       data-shape="rectangular"
+       data-logo_alignment="left">
+  </div>
+</div>
+
+
+  <!-- Coordinator View -->
+  <div id="coordinatorView" class="hidden">
+    <nav>
+      <button onclick="showSection('dashboard')">Dashboard</button>
+      <button onclick="showSection('students')">Add Students</button>
+      <button onclick="showSection('listings')">Manage Listings</button>
+      <button onclick="showSection('reports')">Reports</button>
+    </nav>
+
+    <div id="coordinator-dashboard" class="card">
+      <h2>Coordinator Dashboard</h2>
+      <div class="dashboard-cards" id="coordinatorCards"></div>
+      <div id="actionItems"></div>
+    </div>
+
+    <div id="add-students" class="card hidden">
+      <h3>Add Students (Upload Excel)</h3>
+      <input type="file" id="studentFile">
+      <button onclick="uploadStudents()">Upload Students</button>
+      <div id="studentTable"></div>
+    </div>
+
+    <div id="manage-listings" class="card hidden">
+      <h3>Add Job Listing</h3>
+      <form id="listingForm">
+        <label>Company</label><input name="company">
+        <label>Industry</label><input name="industry">
+        <label>Designation</label><input name="designation">
+        <label>CTC</label><input name="ctc">
+        <label>Location</label><input name="location">
+        <label>Branches (comma-separated)</label><input name="branches">
+        <label>Deadline</label><input type="datetime-local" name="deadline">
+        <label>Company Info Link</label><input name="info">
+        <label>Company Email</label><input name="email">
+        <button type="submit">Add Listing</button>
+      </form>
+      <div id="activeListings"></div>
+    </div>
+
+    <div id="report-section" class="card hidden">
+      <h3>Generate Reports</h3>
+      <button onclick="generateReport('branch')">Branch-wise</button>
+      <button onclick="generateReport('company')">Company-wise</button>
+      <button onclick="generateReport('batch')">Batch-wise</button>
+    </div>
+  </div>
+
+  <!-- Student View -->
+  <div id="studentView" class="hidden">
+    <nav>
+      <button onclick="showStudentSection('studentDashboard')">Dashboard</button>
+      <button onclick="showStudentSection('resumeSection')">Resume</button>
+      <button onclick="showStudentSection('applicationsSection')">My Applications</button>
+      <button onclick="showStudentSection('applySection')">Apply Now</button>
+    </nav>
+
+    <div id="studentDashboard" class="card">
+      <h2>Welcome, Student</h2>
+      <div class="dashboard-cards" id="studentCards"></div>
+    </div>
+
+    <div id="resumeSection" class="card hidden">
+      <h3>Upload / Update Resume</h3>
+      <input type="file" id="resumeFile">
+      <button onclick="uploadResume()">Upload</button>
+      <button onclick="viewMyResume()">View My Resume</button>
+    </div>
+
+    <div id="applicationsSection" class="card hidden">
+      <h3>My Applications</h3>
+      <div id="myApplications"></div>
+    </div>
+
+    <div id="applySection" class="card hidden">
+      <h3>Available Listings</h3>
+      <div id="availableListings"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+function handleLogin() {
+  google.script.run.withSuccessHandler(user => {
+    if (!user || !user.role) {
+      alert("User not authorized or not found in the system.");
+      return;
+    }
+
+    document.getElementById('loginView').style.display = 'none';
+    if (user.role === 'coordinator') {
+      document.getElementById('coordinatorView').classList.remove('hidden');
+    } else if (user.role === 'student') {
+      document.getElementById('studentView').classList.remove('hidden');
+    }
+  }).getUserSession();
+}
+
+
+function handleLogin1() {
+  google.script.run.withSuccessHandler(user => {
+    document.getElementById('loginView').style.display = 'none';
+    if (user.role === 'coordinator') {
+      document.getElementById('coordinatorView').classList.remove('hidden');
+    } else if (user.role === 'student') {
+      document.getElementById('studentView').classList.remove('hidden');
+    }
+  }).getUserSession();
+}
+
+
+function onLogin(response) {
+  const token = response.credential;
+  google.script.run
+    .withSuccessHandler(user => {
+      if (!user || !user.role) {
+        alert("Unauthorized or unknown user.");
+        return;
+      }
+      document.getElementById('loginView').style.display = 'none';
+      if (user.role === 'coordinator') {
+        document.getElementById('coordinatorView').classList.remove('hidden');
+      } else if (user.role === 'student') {
+        document.getElementById('studentView').classList.remove('hidden');
+      }
+    })
+    .verifyGoogleToken(token); // this function in your Apps Script
+}
+
+
+function onLogin1(response) {
+  const credential = response.credential;
+  google.script.run.withSuccessHandler(roleHandler).verifyGoogleToken(credential);
+}
+
+function roleHandler(user) {
+  // handle coordinator vs student UI show/hide here
+}
+
+
+function showSection(section) {
+  document.querySelectorAll('#coordinatorView .card').forEach(el => el.classList.add('hidden'));
+  if (section === 'dashboard') document.getElementById('coordinator-dashboard').classList.remove('hidden');
+  else if (section === 'students') document.getElementById('add-students').classList.remove('hidden');
+  else if (section === 'listings') document.getElementById('manage-listings').classList.remove('hidden');
+  else if (section === 'reports') document.getElementById('report-section').classList.remove('hidden');
+}
+
+function showStudentSection(sectionId) {
+  document.querySelectorAll('#studentView .card').forEach(el => el.classList.add('hidden'));
+  document.getElementById(sectionId).classList.remove('hidden');
+}
+
+function uploadStudents() {
+  const file = document.getElementById('studentFile').files[0];
+  if (!file) return alert('Choose a file');
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = JSON.parse(e.target.result);
+    google.script.run.withSuccessHandler(alert).addStudents(data);
+  };
+  reader.readAsText(file);
+}
+
+function uploadResume() {
+  const file = document.getElementById('resumeFile').files[0];
+  if (!file) return alert('Choose a PDF file');
+  const reader = new FileReader();
+  reader.onload = () => {
+    google.script.run.withSuccessHandler(alert).uploadResume(reader.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function viewMyResume() {
+  google.script.run.withSuccessHandler(link => {
+    if (link) {
+      window.open(link, '_blank');
+    } else {
+      alert("Resume not uploaded yet.");
+    }
+  }).getMyResumeLink();
+}
+
+function generateReport(type) {
+  const fn = {
+    branch: 'generateBranchReport',
+    company: 'generateCompanyReport',
+    batch: 'generateBatchReport'
+  }[type];
+  google.script.run.withSuccessHandler(r => window.open(r.reportUrl)).withFailureHandler(e => alert(e.message))[fn]();
+}
+
+
+
+</script>
+</body>
+</html>
