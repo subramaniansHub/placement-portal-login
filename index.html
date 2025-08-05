@@ -166,23 +166,36 @@ function handleLogin1() {
 }
 
 script-id = 'https://script.google.com/macros/s/AKfycbwi7eos-qTarYr3jJNHhjUj59vO4GE2VpK_UiUprnLlO04Vp3EETH73rj6T88bEQ9dd/exec'
+
+
 function onLogin(response) {
   const token = response.credential;
+
   fetch(script-id, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ token: token })
-})
-.then(res => res.json())
-.then(user => {
-  if (!user || !user.role) {
-    alert("Unauthorized or unknown user.");
-    return;
-  }
-  // show dashboard
-})
-.catch(err => alert("Login failed"));
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: token })
+  })
+  .then(res => res.json())
+  .then(user => {
+    if (!user || !user.role) {
+      alert("Unauthorized or unknown user.");
+      return;
+    }
+
+    document.getElementById('loginView').style.display = 'none';
+    if (user.role === 'coordinator') {
+      document.getElementById('coordinatorView').classList.remove('hidden');
+    } else if (user.role === 'student') {
+      document.getElementById('studentView').classList.remove('hidden');
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Login failed. Check browser console.");
+  });
 }
+
   
 function onLogin2(response) {
   const token = response.credential;
